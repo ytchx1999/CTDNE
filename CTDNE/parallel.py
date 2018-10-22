@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sampling_strategy=None,
-                            num_walks_key=None, walk_length_key=None, neighbors_key=None, probabilities_key=None,
+                            num_walks_key=None, walk_length_key=None, neighbors_key=None, neighbors_time_key=None, probabilities_key=None,
                             first_travel_key=None, quiet=False):
     """
     Generates the random walks which will be used as the skip-gram input.
@@ -38,6 +38,7 @@ def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sam
 
             # Start walk
             walk = [source]
+            last_time = -np.inf
 
             # Calculate walk length
             if source in sampling_strategy:
@@ -49,18 +50,26 @@ def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sam
             while len(walk) < walk_length:
 
                 walk_options = d_graph[walk[-1]].get(neighbors_key, None)
+                time_mask = [
+                    True if np.any(np.array(d_graph[walk[-1]][neighbors_time_key][neighbor]) > last_time) else False for
+                    neighbor in walk_options]
 
                 # Skip dead end nodes
-                if not walk_options:
+                if not walk_options or not np.any(time_mask):
                     break
 
                 if len(walk) == 1:  # For the first step
                     probabilities = d_graph[walk[-1]][first_travel_key]
+                    probabilities *= time_mask
+                    probabilities /= sum(probabilities)
                     walk_to = np.random.choice(walk_options, size=1, p=probabilities)[0]
                 else:
                     probabilities = d_graph[walk[-1]][probabilities_key][walk[-2]]
+                    probabilities *= time_mask
+                    probabilities /= sum(probabilities)
                     walk_to = np.random.choice(walk_options, size=1, p=probabilities)[0]
 
+                last_time = np.min([next_time for next_time in d_graph[walk[-1]][neighbors_time_key][walk_to] if next_time>last_time])
                 walk.append(walk_to)
 
             walk = list(map(str, walk))  # Convert all to strings
