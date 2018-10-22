@@ -1,33 +1,30 @@
-# Node2Vec 
-[![Downloads](http://pepy.tech/badge/node2vec)](http://pepy.tech/project/node2vec)
+# CTDNE
 
-Python3 implementation of the node2vec algorithm Aditya Grover, Jure Leskovec and Vid Kocijan.
-[node2vec: Scalable Feature Learning for Networks. A. Grover, J. Leskovec. ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD), 2016.](https://snap.stanford.edu/node2vec/)
-
-## Changes:
-
-New in `0.2.2`:
-
-Added edge embedding functionality. Module `node2vec.edges`.
-(Fixed error upon installation)
+Python3 implementation of the CTDNE algorithm Giang Hoang Nguyen, John Boaz Lee, Ryan A. Rossi, Nesreen K. Ahmed, Eunyee Koh and Sungchul Kim.
+[Nguyen, Giang Hoang, et al. "Continuous-time dynamic network embeddings." 3rd International Workshop on Learning Representations for Big Networks (WWW BigNet). 2018.]
 
 ## Installation
 
-`pip install node2vec`
+`python setup.py install`
 
 ## Usage
 ```python
+import numpy as np
 import networkx as nx
-from node2vec import Node2Vec
+from ctdne import CTDNE
 
 # Create a graph
 graph = nx.fast_gnp_random_graph(n=100, p=0.5)
+m = len(graph.edges())
+edge2time = {edge: time for edge,time in zip(graph.edges(),(m*np.random.rand(m)).astype(int))}
+nx.set_edge_attributes(graph,edge2time,'time')
 
 # Precompute probabilities and generate walks - **ON WINDOWS ONLY WORKS WITH workers=1**
-node2vec = Node2Vec(graph, dimensions=64, walk_length=30, num_walks=200, workers=4) 
+CTDNE_model = CTDNE(graph, dimensions=64, walk_length=30, num_walks=200, workers=4)
 
 # Embed nodes
-model = node2vec.fit(window=10, min_count=1, batch_words=4)  # Any keywords acceptable by gensim.Word2Vec can be passed, `diemnsions` and `workers` are automatically passed (from the Node2Vec constructor)
+model = CTDNE_model.fit(window=10, min_count=1, batch_words=4)  # Any keywords acceptable by gensim.Word2Vec can be passed, `diemnsions` and `workers` are automatically passed (from the CTDNE constructor)
+
 
 # Look for most similar nodes
 model.wv.most_similar('2')  # Output node names are always strings
@@ -39,7 +36,7 @@ model.wv.save_word2vec_format(EMBEDDING_FILENAME)
 model.save(EMBEDDING_MODEL_FILENAME)
 
 # Embed edges using Hadamard method
-from node2vec.edges import HadamardEmbedder
+from CTDNE.edges import HadamardEmbedder
 
 edges_embs = HadamardEmbedder(keyed_vectors=model.wv)
 
@@ -65,10 +62,10 @@ edges_kv.save_word2vec_format(EDGES_EMBEDDING_FILENAME)
 
 ### Parameters
 
-#### `node2vec.Node2vec`
+#### `ctdne.CTDNE`
 
-- `Node2Vec` constructor:
-    1. `graph`: The first positional argument has to be a networkx graph. Node names must be all integers or all strings. On the output model they will always be strings.
+- `CTDNE` constructor:
+    1. `graph`: The first positional argument has to be a networkx graph. Node names must be all integers or all strings. On the output model they will always be strings. must include a 'time' edge attribute. Supports MultiEdges graphs.
     2. `dimensions`: Embedding dimensions (default: 128)
     3. `walk_length`: Number of nodes in each walk (default: 80)
     4. `num_walks`: Number of walks per node (default: 10)
@@ -80,10 +77,10 @@ edges_kv.save_word2vec_format(EDGES_EMBEDDING_FILENAME)
         Use these keys exactly. If not set, will use the global ones which were passed on the object initialization`
     10. `quiet`: Boolean controlling the verbosity. (default: False)
     
-- `Node2Vec.fit` method:
+- `CTDNE.fit` method:
     Accepts any key word argument acceptable by gensim.Word2Vec
 
-#### `node2vec.EdgeEmbedder`
+#### `edges.EdgeEmbedder`
 
 `EdgeEmbedder` is an abstract class which all the concrete edge embeddings class inherit from.
 The classes are `AverageEmbedder`, `HadamardEmbedder`, `WeightedL1Embedder` and `WeightedL2Embedder` which their practical definition could be found in the [paper](https://arxiv.org/pdf/1607.00653.pdf) on table 1
@@ -101,7 +98,7 @@ Notice that edge embeddings are defined for any pair of nodes, connected or not 
 
 ## Caveats
 - Node names in the input graph must be all strings, or all ints
-- Parallel execution not working on Windows (`joblib` known issue). To run non-parallel on Windows pass `workers=1` on the `Node2Vec`'s constructor
+- Parallel execution not working on Windows (`joblib` known issue). To run non-parallel on Windows pass `workers=1` on the `CTDNE`'s constructor
 
 ## TODO
 - [x] Parallel implementation for walk generation
