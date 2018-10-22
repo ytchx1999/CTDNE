@@ -50,9 +50,10 @@ def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sam
             while len(walk) < walk_length:
 
                 walk_options = d_graph[walk[-1]].get(neighbors_key, None)
-                time_mask = [
-                    True if np.any(np.array(d_graph[walk[-1]][neighbors_time_key][neighbor]) > last_time) else False for
-                    neighbor in walk_options]
+                if walk_options:
+                    time_mask = [
+                        True if np.any(np.array(d_graph[walk[-1]][neighbors_time_key][neighbor]) > last_time) else False for
+                        neighbor in walk_options]
 
                 # Skip dead end nodes
                 if not walk_options or not np.any(time_mask):
