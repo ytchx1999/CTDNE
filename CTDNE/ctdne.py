@@ -18,7 +18,7 @@ class CTDNE:
     Q_KEY = 'q'
 
     def __init__(self, graph, dimensions=128, walk_length=80, num_walks=10, p=1, q=1, weight_key='weight',
-                 workers=1, sampling_strategy=None, quiet=False):
+                 workers=1, sampling_strategy=None, quiet=False,half_life=1):
         """
         Initiates the Node2Vec object, precomputes walking probabilities and generates the walks.
         :param graph: Input graph
@@ -49,6 +49,7 @@ class CTDNE:
         self.weight_key = weight_key
         self.workers = workers
         self.quiet = quiet
+        self.half_life = half_life
 
         if sampling_strategy is None:
             self.sampling_strategy = {}
@@ -154,7 +155,8 @@ class CTDNE:
                                                                                       self.NEIGHBORS_TIME_KEY,
                                                                                       self.PROBABILITIES_KEY,
                                                                                       self.FIRST_TRAVEL_KEY,
-                                                                                      self.quiet) for
+                                                                                      self.quiet,
+                                                                                      self.half_life) for
                                                      idx, num_walks
                                                      in enumerate(num_walks_lists, 1))
 

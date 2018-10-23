@@ -6,7 +6,7 @@ from tqdm import tqdm
 def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sampling_strategy=None,
                             num_walks_key=None, walk_length_key=None, neighbors_key=None, neighbors_time_key=None,
                             probabilities_key=None,
-                            first_travel_key=None, quiet=False):
+                            first_travel_key=None, quiet=False, half_life=1):
     """
     Generates the random walks which will be used as the skip-gram input.
     :return: List of walks. Each walk is a list of nodes.
@@ -70,13 +70,13 @@ def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sam
 
                 if len(walk) == 1:  # For the first step
                     probabilities = d_graph[walk[-1]][first_travel_key]
-                    time_probabilities = np.exp(probabilities * (time_mask - min_time)/60/60/24) / np.sum(
-                        np.exp(probabilities * (time_mask - min_time)/60/60/24))
+                    time_probabilities = np.exp(probabilities * (time_mask - min_time)/half_life) / np.sum(
+                        np.exp(probabilities * (time_mask - min_time)/half_life))
                     walk_to = np.random.choice(walk_options, size=1, p=time_probabilities)[0]
                 else:
                     probabilities = d_graph[walk[-1]][probabilities_key][walk[-2]]
-                    time_probabilities = np.exp(probabilities * (time_mask - min_time)/60/60/24) / np.sum(
-                        np.exp(probabilities * (time_mask - min_time)/60/60/24))
+                    time_probabilities = np.exp(probabilities * (time_mask - min_time)/half_life) / np.sum(
+                        np.exp(probabilities * (time_mask - min_time)/half_life))
                     walk_to = np.random.choice(walk_options, size=1, p=time_probabilities)[0]
 
                 last_time = np.min([next_time for next_time in d_graph[walk[-1]][neighbors_time_key][walk_to] if
