@@ -50,12 +50,12 @@ def parallel_generate_walks(d_graph, global_walk_length, num_walks, cpu_num, sam
             while len(walk) < walk_length:
                 # For the first step
                 if len(walk) == 1:
-                    prob_key = first_travel_key
+                    probabilities = d_graph[walk[-1]][first_travel_key]
                 else:
-                    prob_key = probabilities_key
+                    probabilities = d_graph[walk[-1]][probabilities_key][walk[-2]]
 
                 walk_options = []
-                for neighbor, p in zip(d_graph[walk[-1]].get(neighbors_key, []), d_graph[walk[-1]][prob_key]):
+                for neighbor, p in zip(d_graph[walk[-1]].get(neighbors_key, []), probabilities):
                     times = d_graph[walk[-1]][neighbors_time_key][neighbor]
                     walk_options += [(neighbor, p, time) for time in times if time > last_time]
 
