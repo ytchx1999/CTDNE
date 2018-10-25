@@ -18,7 +18,7 @@ class CTDNE:
     Q_KEY = 'q'
 
     def __init__(self, graph, dimensions=128, walk_length=80, num_walks=10, p=1, q=1, weight_key='weight',
-                 workers=1, sampling_strategy=None, quiet=False,half_life=1):
+                 workers=1, sampling_strategy=None, quiet=False, use_linear=True, half_life=1):
         """
         Initiates the Node2Vec object, precomputes walking probabilities and generates the walks.
         :param graph: Input graph
@@ -39,7 +39,8 @@ class CTDNE:
         :type workers: int
         :param sampling_strategy: Node specific sampling strategies, supports setting node specific 'q', 'p', 'num_walks' and 'walk_length'.
         Use these keys exactly. If not set, will use the global ones which were passed on the object initialization
-        """
+        :param use_linear: Regarding the time decay types: 'linear' and 'exp', if this param is True then use linear or else exp
+        :param half_life: Only relevant if use_linear==False, and then the value is used to rescale the timeline"""
         self.graph = graph
         self.dimensions = dimensions
         self.walk_length = walk_length
@@ -49,6 +50,7 @@ class CTDNE:
         self.weight_key = weight_key
         self.workers = workers
         self.quiet = quiet
+        self.use_linear = use_linear
         self.half_life = half_life
 
         if sampling_strategy is None:
@@ -156,6 +158,7 @@ class CTDNE:
                                                                                       self.PROBABILITIES_KEY,
                                                                                       self.FIRST_TRAVEL_KEY,
                                                                                       self.quiet,
+                                                                                      self.use_linear,
                                                                                       self.half_life) for
                                                      idx, num_walks
                                                      in enumerate(num_walks_lists, 1))
