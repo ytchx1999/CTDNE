@@ -3,9 +3,16 @@
 Python3 implementation of the CTDNE algorithm Giang Hoang Nguyen, John Boaz Lee, Ryan A. Rossi, Nesreen K. Ahmed, Eunyee Koh and Sungchul Kim.
 [Nguyen, Giang Hoang, et al. "Continuous-time dynamic network embeddings." 3rd International Workshop on Learning Representations for Big Networks (WWW BigNet). 2018.]
 
+```bash
+gensim == 4.1.2
+```
+
 ## Installation
 
-`python setup.py install`
+<!-- `python setup.py install` -->
+```bash
+python3 example.py
+```
 
 ## Usage
 ```python

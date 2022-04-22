@@ -1,6 +1,6 @@
 import numpy as np
 import networkx as nx
-from ctdne import CTDNE
+from CTDNE.ctdne import CTDNE
 
 # FILES
 EMBEDDING_FILENAME = './embeddings.emb'
